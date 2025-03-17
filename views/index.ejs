@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burg Hosterwitz - Verwaltung</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Burg Hosterwitz</h1>
+            <% if (user) { %>
+                <p>Willkommen, <%= user.role === 'kastellan' ? 'Burgvogt' : (user.role === 'hausmeister' ? 'Burgmeister' : user.username) %></p>
+            <% } %>
+        </header>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <% if (user) { %>
+                    <% if (user.role === 'kastellan') { %>
+                        <li><a href="/dienstplan" class="nav-link">Dienstplan</a></li>
+                        <li><a href="/mitarbeiter" class="nav-link">Mitarbeiter</a></li>
+                        <li><a href="/aufgaben" class="nav-link">Aufgaben</a></li>
+                        <li><a href="/aufgaben/lift" class="nav-link">Lift-Wartung</a></li>
+                        <li><a href="/material" class="nav-link">Lagerverwaltung</a></li>
+                    <% } else if (user.role === 'hausmeister') { %>
+                        <li><a href="/aufgaben" class="nav-link">Meine Aufgaben</a></li>
+                        <li><a href="/aufgaben/lift" class="nav-link">Lift-Wartung</a></li>
+                        <li><a href="/material" class="nav-link">Lagerbestand</a></li>
+                    <% } else { %>
+                        <li><a href="/dienstplan" class="nav-link">Mein Dienstplan</a></li>
+                    <% } %>
+                    <li><a href="/logout" class="nav-link">Abmelden</a></li>
+                <% } %>
+            </ul>
+        </nav>
+
+        <main>
+            <% if (!user) { %>
+                <div class="medieval-panel">
+                    <h2>Willkommen im Verwaltungssystem der Burg Hosterwitz</h2>
+                    <p>Bitte melden Sie sich an, um fortzufahren.</p>
+                    <a href="/login" class="medieval-button">Zur Anmeldung</a>
+                </div>
+            <% } else { %>
+                <div class="medieval-panel">
+                    <% if (user.role === 'kastellan') { %>
+                        <h2>Burgvogt Dashboard</h2>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-item">
+                                <h3>Dienstplan</h3>
+                                <p>Verwalten Sie die Dienste Ihrer Mitarbeiter</p>
+                                <a href="/dienstplan" class="medieval-button">Zum Dienstplan</a>
+                            </div>
+                            <div class="dashboard-item">
+                                <h3>Mitarbeiter</h3>
+                                <p>Verwalten Sie Ihre Mitarbeiter</p>
+                                <a href="/mitarbeiter" class="medieval-button">Zur Mitarbeiterverwaltung</a>
+                            </div>
+                            <div class="dashboard-item">
+                                <h3>Aufgaben</h3>
+                                <p>Verwalten Sie die Aufgaben des Burgmeisters</p>
+                                <a href="/aufgaben" class="medieval-button">Zu den Aufgaben</a>
+                            </div>
+                            <div class="dashboard-item">
+                                <h3>Lift-Wartung</h3>
+                                <p>Überwachen Sie die Lift-Wartungsarbeiten</p>
+                                <a href="/aufgaben/lift" class="medieval-button">Zur Lift-Wartung</a>
+                            </div>
+                            <div class="dashboard-item">
+                                <h3>Lager</h3>
+                                <p>Verwalten Sie den Materialbestand</p>
+                                <a href="/material" class="medieval-button">Zum Lager</a>
+                            </div>
+                        </div>
+                    <% } else if (user.role === 'hausmeister') { %>
+                        <h2>Burgmeister Dashboard</h2>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-item">
+                                <h3>Meine Aufgaben</h3>
+                                <p>Sehen Sie Ihre aktuellen Aufgaben</p>
+                                <a href="/aufgaben" class="medieval-button">Zu den Aufgaben</a>
+                            </div>
+                            <div class="dashboard-item">
+                                <h3>Lift-Wartung</h3>
+                                <p>Verwalten Sie die Lift-Wartungsarbeiten</p>
+                                <a href="/aufgaben/lift" class="medieval-button">Zur Lift-Wartung</a>
+                            </div>
+                            <div class="dashboard-item">
+                                <h3>Lagerbestand</h3>
+                                <p>Prüfen Sie den Materialbestand</p>
+                                <a href="/material" class="medieval-button">Zum Lager</a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <h2>Mitarbeiter Dashboard</h2>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-item">
+                                <h3>Mein Dienstplan</h3>
+                                <p>Sehen Sie Ihre Dienste</p>
+                                <a href="/dienstplan" class="medieval-button">Zum Dienstplan</a>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+        </main>
+
+        <footer class="footer">
+            <p>Version <%= version %></p>
+            <p>Programmiert von <%= developer %></p>
+        </footer>
+    </div>
+
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .dashboard-item {
+            background: var(--background-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .dashboard-item h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .dashboard-item p {
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burg Hosterwitz - Aufgabendetails</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Aufgabendetails</h1>
+            <a href="/api/aufgaben" class="medieval-button">
+                <i class="fas fa-arrow-left"></i> Zurück zur Übersicht
+            </a>
+        </header>
+
+        <main class="medieval-panel">
+            <div class="task-detail">
+                <div class="task-header">
+                    <div class="task-title">
+                        <i class="fas <%= 
+                            aufgabe.kategorie === 'lift' ? 'fa-dungeon' : 
+                            aufgabe.kategorie === 'garten' ? 'fa-leaf' :
+                            aufgabe.kategorie === 'reinigung' ? 'fa-broom' :
+                            aufgabe.kategorie === 'reparatur' ? 'fa-hammer' :
+                            'fa-scroll'
+                        %>"></i>
+                        <h2><%= aufgabe.titel %></h2>
+                    </div>
+                    <div class="task-badges">
+                        <span class="badge kategorie-<%= aufgabe.kategorie %>">
+                            <%= aufgabe.kategorie === 'lift' ? 'Burgaufzug' :
+                               aufgabe.kategorie === 'garten' ? 'Burggarten' :
+                               aufgabe.kategorie === 'reinigung' ? 'Reinigung' :
+                               aufgabe.kategorie === 'reparatur' ? 'Reparatur' :
+                               'Allgemein'
+                            %>
+                        </span>
+                        <span class="badge status-<%= aufgabe.status %>">
+                            <%= aufgabe.status === 'neu' ? 'Neu' :
+                               aufgabe.status === 'begonnen' ? 'In Arbeit' :
+                               aufgabe.status === 'abgeschlossen' ? 'Erledigt' :
+                               'Verschoben'
+                            %>
+                        </span>
+                        <span class="badge prioritaet-<%= aufgabe.prioritaet %>">
+                            <i class="fas <%= 
+                                aufgabe.prioritaet === 'hoch' ? 'fa-exclamation-circle' :
+                                aufgabe.prioritaet === 'mittel' ? 'fa-dot-circle' :
+                                'fa-circle'
+                            %>"></i>
+                            <%= aufgabe.prioritaet === 'hoch' ? 'Dringend' :
+                               aufgabe.prioritaet === 'mittel' ? 'Normal' :
+                               'Niedrig'
+                            %>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="task-content medieval-panel">
+                    <div class="task-section">
+                        <h3><i class="fas fa-scroll"></i> Beschreibung</h3>
+                        <p class="task-description"><%= aufgabe.beschreibung %></p>
+                    </div>
+
+                    <div class="task-section">
+                        <h3><i class="fas fa-info-circle"></i> Details</h3>
+                        <div class="task-meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-label">Fällig bis:</span>
+                                <span class="meta-value"><%= new Date(aufgabe.terminBis).toLocaleDateString('de-DE') %></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Zugewiesen an:</span>
+                                <span class="meta-value"><%= aufgabe.zugewiesenAn === 'burgmeister' ? 'Burgmeister' : 'Burgvogt' %></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Erstellt von:</span>
+                                <span class="meta-value"><%= aufgabe.erstelltVon === 'burgvogt' ? 'Burgvogt' : 'Burgmeister' %></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Erstellt am:</span>
+                                <span class="meta-value"><%= new Date(aufgabe.erstelltAm).toLocaleDateString('de-DE') %></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <% if (aufgabe.anmerkungen && aufgabe.anmerkungen.length > 0) { %>
+                    <div class="task-section">
+                        <h3><i class="fas fa-comments"></i> Anmerkungen</h3>
+                        <div class="anmerkungen-liste">
+                            <% aufgabe.anmerkungen.forEach(function(anmerkung) { %>
+                                <div class="anmerkung medieval-panel">
+                                    <div class="anmerkung-header">
+                                        <span class="anmerkung-autor"><%= anmerkung.autor === 'burgvogt' ? 'Burgvogt' : 'Burgmeister' %></span>
+                                        <span class="anmerkung-datum"><%= new Date(anmerkung.datum).toLocaleDateString('de-DE') %></span>
+                                    </div>
+                                    <p class="anmerkung-text"><%= anmerkung.text %></p>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                    <% } %>
+
+                    <% if (user.role === 'burgmeister' || user.role === 'kastellan') { %>
+                    <div class="task-section">
+                        <h3><i class="fas fa-pen"></i> Neue Anmerkung</h3>
+                        <form action="/api/aufgaben/<%= aufgabe._id %>/anmerkung" method="POST" class="anmerkung-form">
+                            <textarea name="anmerkung" class="medieval-input" rows="3" placeholder="Eure Anmerkung..." required></textarea>
+                            <button type="submit" class="medieval-button">
+                                <i class="fas fa-feather-alt"></i> Anmerkung hinzufügen
+                            </button>
+                        </form>
+                    </div>
+                    <% } %>
+
+                    <% if (user.role === 'burgmeister') { %>
+                    <div class="task-section">
+                        <h3><i class="fas fa-tasks"></i> Status ändern</h3>
+                        <form action="/api/aufgaben/<%= aufgabe._id %>/status" method="POST" class="status-form">
+                            <select name="status" class="medieval-select" required>
+                                <option value="neu" <%= aufgabe.status === 'neu' ? 'selected' : '' %>>Neu</option>
+                                <option value="begonnen" <%= aufgabe.status === 'begonnen' ? 'selected' : '' %>>In Arbeit</option>
+                                <option value="abgeschlossen" <%= aufgabe.status === 'abgeschlossen' ? 'selected' : '' %>>Erledigt</option>
+                                <option value="verschoben" <%= aufgabe.status === 'verschoben' ? 'selected' : '' %>>Verschoben</option>
+                            </select>
+                            <button type="submit" class="medieval-button">
+                                <i class="fas fa-save"></i> Status aktualisieren
+                            </button>
+                        </form>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .task-detail {
+            background: var(--background-color);
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .task-content {
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .task-section {
+            margin-bottom: 30px;
+        }
+
+        .task-section h3 {
+            color: var(--primary-color);
+            font-family: 'Cinzel', serif;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .meta-label {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .meta-value {
+            font-size: 1.1em;
+        }
+
+        .anmerkungen-liste {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .anmerkung {
+            padding: 15px;
+            background: var(--background-color);
+        }
+
+        .anmerkung-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-size: 0.9em;
+        }
+
+        .anmerkung-text {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .anmerkung-form,
+        .status-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .medieval-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--background-color);
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .medieval-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+    </style>
+</body>
+</html>

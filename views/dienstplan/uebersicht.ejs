@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burg Hosterwitz - Dienstplan</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .calendar-grid {
+            background: var(--background-color);
+            border: double 4px var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .calendar-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .calendar-day {
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover:not(.empty):not(.ausser-saison) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(139, 69, 19, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .calendar-day.empty {
+            background: var(--background-color);
+            border: none;
+        }
+
+        .calendar-day.feiertag {
+            background: #FFF3E0;
+            border-color: var(--accent-color);
+        }
+
+        .calendar-day.feiertag .day-number {
+            color: var(--accent-color);
+        }
+
+        .calendar-day.ausser-saison {
+            background: #F5F5F5;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .season-marker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-family: 'Cinzel', serif;
+            color: var(--primary-color);
+            font-size: 1.2em;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .day-number {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin-bottom: 5px;
+        }
+
+        .shifts {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .shift {
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            text-align: center;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .shift.shop_eingang { background: #E6D5AC; }
+        .shift.shop { background: #C8E6C9; }
+        .shift.museum { background: #B3E5FC; }
+        .shift.kasse_eingang { background: #FFCCBC; }
+        .shift.fuehrung { background: #E1BEE7; }
+
+        .calendar-header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-navigation {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .medieval-select {
+            padding: 8px 35px 8px 15px;
+            font-family: 'Cinzel', serif;
+            color: var(--primary-color);
+            background: var(--background-color);
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B4513' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            cursor: pointer;
+        }
+
+        .medieval-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px;
+            }
+
+            .day-number {
+                font-size: 1em;
+            }
+
+            .season-marker {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-scroll"></i> Dienstplan der Burg Hosterwitz</h1>
+            <p class="medieval-subtitle">
+                <% 
+                const monate = ['Eismond', 'Hornung', 'Lenzmond', 'Ostermond', 'Wonnemond', 'Brachmond', 
+                               'Heumond', 'Erntemond', 'Herbstmond', 'Weinmond', 'Nebelmond', 'Julmond'];
+                %>
+                <%= monate[monat - 1] %> <%= jahr %>
+            </p>
+        </header>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li><a href="/" class="nav-link"><i class="fas fa-chevron-left"></i> Zurück zum Dashboard</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <div class="medieval-panel">
+                <div class="calendar-header-section">
+                    <div class="calendar-navigation">
+                        <button class="medieval-button" onclick="vormonat()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <select id="monatswahl" class="medieval-select" onchange="monatsAuswahl()">
+                            <% for(let i = 4; i <= 11; i++) { %>
+                                <option value="<%= i %>" <%= monat == i ? 'selected' : '' %>>
+                                    <%= monate[i - 1] %>
+                                </option>
+                            <% } %>
+                        </select>
+                        <button class="medieval-button" onclick="nachmonat()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="calendar-header">
+                        <div>Sonntag</div>
+                        <div>Montag</div>
+                        <div>Dienstag</div>
+                        <div>Mittwoch</div>
+                        <div>Donnerstag</div>
+                        <div>Freitag</div>
+                        <div>Samstag</div>
+                    </div>
+                    <div id="calendar-body" class="calendar-body"></div>
+                </div>
+            </div>
+
+            <div id="schichtModal" class="modal">
+                <div class="modal-content medieval-panel">
+                    <h2><i class="fas fa-scroll"></i> Neue Schicht zuweisen</h2>
+                    <form id="schichtForm" class="medieval-form">
+                        <input type="hidden" id="schichtDatum" name="datum">
+                        <div class="form-group">
+                            <label for="position">Position:</label>
+                            <select id="position" name="position" class="medieval-select" required>
+                                <option value="shop_eingang">Burgtor & Shop</option>
+                                <option value="shop">Burgshop</option>
+                                <option value="museum">Burgmuseum</option>
+                                <option value="kasse_eingang">Schatzkammer</option>
+                                <option value="fuehrung">Burgführung</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mitarbeiter">Mitarbeiter:</label>
+                            <select id="mitarbeiter" name="mitarbeiter" class="medieval-select" required>
+                                <% mitarbeiter.forEach(function(ma) { %>
+                                    <option value="<%= ma._id %>"><%= ma.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="schichtBeginn">Schichtbeginn:</label>
+                            <input type="time" id="schichtBeginn" name="schichtBeginn" class="medieval-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schichtEnde">Schichtende:</label>
+                            <input type="time" id="schichtEnde" name="schichtEnde" class="medieval-input" required>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="medieval-button">
+                                <i class="fas fa-save"></i> Speichern
+                            </button>
+                            <button type="button" class="medieval-button secondary" onclick="schliesseModal()">
+                                <i class="fas fa-times"></i> Abbrechen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            let ausgewaehltesDatum = null;
+            const oesterreichischeFeiertage2025 = [
+                '2025-01-01', // Neujahr
+                '2025-01-06', // Heilige Drei Könige
+                '2025-04-21', // Ostermontag
+                '2025-05-01', // Staatsfeiertag
+                '2025-05-29', // Christi Himmelfahrt
+                '2025-06-09', // Pfingstmontag
+                '2025-06-19', // Fronleichnam
+                '2025-08-15', // Mariä Himmelfahrt
+                '2025-10-26', // Nationalfeiertag
+                '2025-11-01', // Allerheiligen
+                '2025-12-08', // Mariä Empfängnis
+                '2025-12-25', // Christtag
+                '2025-12-26'  // Stefanitag
+            ];
+
+            function istInSaison(datum) {
+                const d = new Date(datum);
+                const monat = d.getMonth() + 1;
+                const tag = d.getDate();
+                
+                // Saison: 1. April bis 1. November
+                if (monat < 4 || monat > 11) return false;
+                if (monat === 4 && tag < 1) return false;
+                if (monat === 11 && tag > 1) return false;
+                
+                return true;
+            }
+
+            function erstelleKalender(jahr, monat) {
+                const ersterTag = new Date(jahr, monat - 1, 1);
+                const letzterTag = new Date(jahr, monat, 0);
+                const startTag = ersterTag.getDay();
+                const tageImMonat = letzterTag.getDate();
+
+                let kalenderHTML = '';
+                let tagZaehler = 1;
+                let wochen = Math.ceil((startTag + tageImMonat) / 7);
+
+                for (let i = 0; i < wochen; i++) {
+                    kalenderHTML += '<div class="calendar-week">';
+                    
+                    for (let j = 0; j < 7; j++) {
+                        if (i === 0 && j < startTag || tagZaehler > tageImMonat) {
+                            kalenderHTML += '<div class="calendar-day empty"></div>';
+                        } else {
+                            const datum = `${jahr}-${String(monat).padStart(2, '0')}-${String(tagZaehler).padStart(2, '0')}`;
+                            const istFeiertag = oesterreichischeFeiertage2025.includes(datum);
+                            const inSaison = istInSaison(datum);
+                            const klassen = ['calendar-day'];
+                            
+                            if (istFeiertag) klassen.push('feiertag');
+                            if (!inSaison) klassen.push('ausser-saison');
+                            
+                            kalenderHTML += `
+                                <div class="${klassen.join(' ')}" data-datum="${datum}" ${inSaison ? `onclick="schichtHinzufuegen('${datum}')"` : ''}>
+                                    <div class="day-number">${tagZaehler}</div>
+                                    ${!inSaison ? '<div class="season-marker">Geschlossen</div>' : ''}
+                                    <div class="shifts" id="shifts-${datum}"></div>
+                                </div>
+                            `;
+                            tagZaehler++;
+                        }
+                    }
+                    
+                    kalenderHTML += '</div>';
+                }
+
+                document.getElementById('calendar-body').innerHTML = kalenderHTML;
+            }
+
+            function schichtHinzufuegen(datum) {
+                if (!istInSaison(datum)) {
+                    alert('An diesem Tag ist die Burg geschlossen.');
+                    return;
+                }
+                
+                ausgewaehltesDatum = datum;
+                document.getElementById('schichtDatum').value = datum;
+                document.getElementById('schichtModal').style.display = 'block';
+            }
+
+            function zeigeSchichten(dienstplan) {
+                dienstplan.forEach(schicht => {
+                    const datum = new Date(schicht.datum);
+                    const datumStr = datum.toISOString().split('T')[0];
+                    const container = document.getElementById(`shifts-${datumStr}`);
+                    
+                    if (container) {
+                        const schichtElement = document.createElement('div');
+                        schichtElement.className = `shift ${schicht.position}`;
+                        schichtElement.title = `${schicht.mitarbeiterName}\n${schicht.schichtBeginn} - ${schicht.schichtEnde}`;
+                        container.appendChild(schichtElement);
+                    }
+                });
+            }
+
+            function vormonat() {
+                let monat = parseInt(document.getElementById('monatswahl').value);
+                if (monat > 4) {
+                    monat--;
+                    document.getElementById('monatswahl').value = monat;
+                    window.location.href = `/dienstplan?monat=${monat}&jahr=<%= jahr %>`;
+                }
+            }
+
+            function nachmonat() {
+                let monat = parseInt(document.getElementById('monatswahl').value);
+                if (monat < 11) {
+                    monat++;
+                    document.getElementById('monatswahl').value = monat;
+                    window.location.href = `/dienstplan?monat=${monat}&jahr=<%= jahr %>`;
+                }
+            }
+
+            function monatsAuswahl() {
+                const monat = document.getElementById('monatswahl').value;
+                window.location.href = `/dienstplan?monat=${monat}&jahr=<%= jahr %>`;
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                erstelleKalender(<%= jahr %>, <%= monat %>);
+                zeigeSchichten(<%- JSON.stringify(dienstplan) %>);
+            });
+
+            // Modal Funktionen
+            function schliesseModal() {
+                document.getElementById('schichtModal').style.display = 'none';
+            }
+
+            document.getElementById('schichtForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const schichtDaten = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await fetch('/dienstplan/schicht', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(schichtDaten)
+                    });
+
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert(error.message || 'Ein Fehler ist aufgetreten');
+                    }
+                } catch (error) {
+                    alert('Ein Fehler ist aufgetreten');
+                }
+            });
+        </script>
+    </div>
+
+    <footer class="footer">
+        <p>Version 25.1</p>
+        <p>Programmiert von Martin Steindorfer</p>
+    </footer>
+</body>
+</html>

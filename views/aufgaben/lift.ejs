@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burg Hosterwitz - Lift-Wartung</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Lift-Wartung</h1>
+        </header>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li><a href="/" class="nav-link">Zurück zum Dashboard</a></li>
+                <% if (user.role === 'kastellan') { %>
+                    <li><a href="#" class="nav-link" id="neueWartung">Neue Wartung</a></li>
+                <% } %>
+                <li><a href="/material?kategorie=lift" class="nav-link">Lift-Materialien</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <div class="medieval-panel">
+                <h2>Aktuelle Wartungsaufgaben</h2>
+                <div class="wartungen-grid">
+                    <% wartungen.forEach(function(wartung) { %>
+                        <div class="wartung-item task-priority-<%= wartung.prioritaet %>">
+                            <div class="wartung-header">
+                                <h3><%= wartung.titel %></h3>
+                                <span class="wartung-art"><%= wartung.liftWartung.art %></span>
+                            </div>
+                            <p><%= wartung.beschreibung %></p>
+                            <div class="wartung-meta">
+                                <span>Priorität: <%= wartung.prioritaet %></span>
+                                <span>Status: <%= wartung.status %></span>
+                                <span>Fällig bis: <%= new Date(wartung.terminBis).toLocaleDateString('de-DE') %></span>
+                            </div>
+                            <% if (wartung.liftWartung.materialien && wartung.liftWartung.materialien.length > 0) { %>
+                                <div class="materialien-liste">
+                                    <h4>Benötigte Materialien:</h4>
+                                    <ul>
+                                        <% wartung.liftWartung.materialien.forEach(function(material) { %>
+                                            <li>
+                                                <%= material.name %>: <%= material.menge %> <%= material.einheit %>
+                                            </li>
+                                        <% }); %>
+                                    </ul>
+                                </div>
+                            <% } %>
+                            <% if (user.role === 'hausmeister' && wartung.status !== 'abgeschlossen') { %>
+                                <div class="wartung-actions">
+                                    <button class="medieval-button" onclick="wartungBeginnen('<%= wartung._id %>')">
+                                        Beginnen
+                                    </button>
+                                    <button class="medieval-button" onclick="wartungAbschliessen('<%= wartung._id %>')">
+                                        Abschließen
+                                    </button>
+                                    <button class="medieval-button" onclick="anmerkungHinzufuegen('<%= wartung._id %>')">
+                                        Anmerkung
+                                    </button>
+                                </div>
+                            <% } %>
+                            <% if (wartung.anmerkungen && wartung.anmerkungen.length > 0) { %>
+                                <div class="anmerkungen">
+                                    <h4>Anmerkungen:</h4>
+                                    <ul>
+                                        <% wartung.anmerkungen.forEach(function(anmerkung) { %>
+                                            <li>
+                                                <%= anmerkung.text %>
+                                                <small>
+                                                    - <%= new Date(anmerkung.datum).toLocaleString('de-DE') %>
+                                                    (<%= anmerkung.autor %>)
+                                                </small>
+                                            </li>
+                                        <% }); %>
+                                    </ul>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <div class="medieval-panel">
+                <h2>Materialbestand</h2>
+                <div class="material-grid">
+                    <% materialien.forEach(function(material) { %>
+                        <div class="material-item <%= material.bestand <= material.mindestBestand ? 'niedriger-bestand' : '' %>">
+                            <% if (material.bild) { %>
+                                <div class="material-bild">
+                                    <img src="<%= material.bild.pfad %>" alt="<%= material.name %>">
+                                </div>
+                            <% } %>
+                            <div class="material-info">
+                                <h3><%= material.name %></h3>
+                                <p>Bestand: <%= material.bestand %> <%= material.einheit %></p>
+                                <p>Mindestbestand: <%= material.mindestBestand %> <%= material.einheit %></p>
+                                <p>Lagerort: <%= material.lagerort %></p>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Modal für neue Wartung -->
+            <div id="wartungModal" class="modal">
+                <div class="modal-content medieval-panel">
+                    <h2>Neue Wartung</h2>
+                    <form id="wartungForm">
+                        <div class="form-group">
+                            <label for="titel">Titel:</label>
+                            <input type="text" id="titel" name="titel" required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="beschreibung">Beschreibung:</label>
+                            <textarea id="beschreibung" name="beschreibung" required class="form-input"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="wartungsArt">Art der Wartung:</label>
+                            <select id="wartungsArt" name="wartungsArt" required class="form-input">
+                                <option value="schmierung">Schmierung</option>
+                                <option value="reinigung_kabine">Reinigung Kabine</option>
+                                <option value="reinigung_raum">Reinigung Liftraum</option>
+                                <option value="reparatur">Reparatur</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="prioritaet">Priorität:</label>
+                            <select id="prioritaet" name="prioritaet" required class="form-input">
+                                <option value="hoch">Hoch</option>
+                                <option value="mittel">Mittel</option>
+                                <option value="niedrig">Niedrig</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="terminBis">Termin bis:</label>
+                            <input type="date" id="terminBis" name="terminBis" required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Benötigte Materialien:</label>
+                            <div id="materialienListe">
+                                <% materialien.forEach(function(material) { %>
+                                    <div class="material-auswahl">
+                                        <label>
+                                            <input type="checkbox" name="material_<%= material._id %>" value="<%= material._id %>">
+                                            <%= material.name %>
+                                        </label>
+                                        <input type="number" name="menge_<%= material._id %>" min="1" class="form-input material-menge" disabled>
+                                        <span><%= material.einheit %></span>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                        <button type="submit" class="medieval-button">Speichern</button>
+                        <button type="button" class="medieval-button" onclick="schliesseModal()">Abbrechen</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal für Wartungsabschluss -->
+            <div id="abschlussModal" class="modal">
+                <div class="modal-content medieval-panel">
+                    <h2>Wartung abschließen</h2>
+                    <form id="abschlussForm">
+                        <input type="hidden" id="wartungId" name="wartungId">
+                        <div class="form-group">
+                            <label for="anmerkungText">Abschlussbericht:</label>
+                            <textarea id="anmerkungText" name="anmerkungText" required class="form-input"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Verwendete Materialien:</label>
+                            <div id="verwendeteMaterialien"></div>
+                        </div>
+                        <button type="submit" class="medieval-button">Abschließen</button>
+                        <button type="button" class="medieval-button" onclick="schliesseAbschlussModal()">Abbrechen</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Version 25.1</p>
+            <p>Programmiert von Martin Steindorfer</p>
+        </footer>
+    </div>
+
+    <style>
+        .wartungen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .wartung-item {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .wartung-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .wartung-art {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--background-color);
+            font-size: 0.9em;
+        }
+
+        .wartung-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .wartung-meta span {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--background-color);
+        }
+
+        .materialien-liste {
+            margin: 10px 0;
+            padding: 10px;
+            background: var(--background-color);
+            border-radius: 4px;
+        }
+
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .material-item {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .material-item.niedriger-bestand {
+            border-color: var(--error-color);
+            background-color: rgba(139, 0, 0, 0.1);
+        }
+
+        .material-bild {
+            margin-bottom: 10px;
+        }
+
+        .material-bild img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .material-auswahl {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+
+        .material-menge {
+            width: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .wartungen-grid,
+            .material-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wartung-meta {
+                flex-direction: column;
+            }
+
+            .material-auswahl {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+
+    <script>
+        // Event Listener für Material-Checkboxen
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const mengeInput = this.parentElement.nextElementSibling;
+                mengeInput.disabled = !this.checked;
+                if (this.checked) {
+                    mengeInput.value = 1;
+                } else {
+                    mengeInput.value = '';
+                }
+            });
+        });
+
+        // Neue Wartung
+        document.getElementById('neueWartung')?.addEventListener('click', () => {
+            document.getElementById('wartungModal').style.display = 'block';
+        });
+
+        function schliesseModal() {
+            document.getElementById('wartungModal').style.display = 'none';
+            document.getElementById('wartungForm').reset();
+        }
+
+        // Wartung beginnen
+        async function wartungBeginnen(wartungId) {
+            try {
+                const response = await fetch(`/api/aufgaben/lift/${wartungId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'begonnen' })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Ein Fehler ist aufgetreten');
+                }
+            } catch (error) {
+                alert('Ein Fehler ist aufgetreten');
+            }
+        }
+
+        // Wartung abschließen
+        function wartungAbschliessen(wartungId) {
+            document.getElementById('wartungId').value = wartungId;
+            // Materialien für die spezifische Wartung laden
+            fetch(`/api/aufgaben/lift/${wartungId}`)
+                .then(response => response.json())
+                .then(wartung => {
+                    const container = document.getElementById('verwendeteMaterialien');
+                    container.innerHTML = '';
+                    wartung.liftWartung.materialien.forEach(material => {
+                        container.innerHTML += `
+                            <div class="material-auswahl">
+                                <label>
+                                    <input type="checkbox" name="material_${material.id}" value="${material.id}">
+                                    ${material.name}
+                                </label>
+                                <input type="number" name="menge_${material.id}" min="1" max="${material.menge}" 
+                                       class="form-input material-menge" disabled>
+                                <span>${material.einheit}</span>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('abschlussModal').style.display = 'block';
+                });
+        }
+
+        function schliesseAbschlussModal() {
+            document.getElementById('abschlussModal').style.display = 'none';
+            document.getElementById('abschlussForm').reset();
+        }
+
+        // Formulare
+        document.getElementById('wartungForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const materialien = [];
+            document.querySelectorAll('.material-auswahl input[type="checkbox"]:checked').forEach(checkbox => {
+                const id = checkbox.value;
+                const menge = document.querySelector(`input[name="menge_${id}"]`).value;
+                materialien.push({ id, menge: parseInt(menge) });
+            });
+
+            const formData = {
+                titel: document.getElementById('titel').value,
+                beschreibung: document.getElementById('beschreibung').value,
+                wartungsArt: document.getElementById('wartungsArt').value,
+                prioritaet: document.getElementById('prioritaet').value,
+                terminBis: document.getElementById('terminBis').value,
+                benoetigteMaterialien: materialien
+            };
+
+            try {
+                const response = await fetch('/api/aufgaben/lift', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Ein Fehler ist aufgetreten');
+                }
+            } catch (error) {
+                alert('Ein Fehler ist aufgetreten');
+            }
+        };
+
+        document.getElementById('abschlussForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const wartungId = document.getElementById('wartungId').value;
+            const materialien = [];
+            document.querySelectorAll('#verwendeteMaterialien input[type="checkbox"]:checked').forEach(checkbox => {
+                const id = checkbox.value;
+                const menge = document.querySelector(`input[name="menge_${id}"]`).value;
+                materialien.push({ id, menge: parseInt(menge) });
+            });
+
+            try {
+                const response = await fetch(`/api/aufgaben/lift/${wartungId}/abschluss`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        anmerkung: document.getElementById('anmerkungText').value,
+                        verwendeteMaterialien: materialien
+                    })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Ein Fehler ist aufgetreten');
+                }
+            } catch (error) {
+                alert('Ein Fehler ist aufgetreten');
+            }
+        };
+    </script>
+</body>
+</html>

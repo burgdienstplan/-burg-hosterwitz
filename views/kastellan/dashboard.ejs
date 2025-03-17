@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burg Hosterwitz - Burgvogt Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --background-color: #FFF8DC;
+            --border-color: #8B4513;
+            --primary-color: #8B4513;
+            --text-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-crown"></i> Willkommen, Burgvogt</h1>
+        </header>
+
+        <nav class="nav">
+            <ul class="nav-list">
+                <li><a href="/api/aufgaben" class="nav-link"><i class="fas fa-scroll"></i> Aufgabenverwaltung</a></li>
+                <li><a href="/dienstplan" class="nav-link"><i class="fas fa-calendar-alt"></i> Dienstplan</a></li>
+                <li><a href="/api/mitarbeiter" class="nav-link"><i class="fas fa-users"></i> Burgpersonal</a></li>
+                <li><a href="/api/lift" class="nav-link"><i class="fas fa-dungeon"></i> Burglift</a></li>
+                <li><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Verlassen</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <div class="dashboard-container medieval-panel">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-icon">
+                            <i class="fas fa-scroll"></i>
+                        </div>
+                        <h2>Aufgabenverwaltung</h2>
+                        <p>Neue Aufgaben erstellen und bestehende verwalten</p>
+                        <a href="/api/aufgaben" class="medieval-button">
+                            <i class="fas fa-tasks"></i> Zu den Aufgaben
+                        </a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-icon">
+                            <i class="fas fa-dungeon"></i>
+                        </div>
+                        <h2>Burglift</h2>
+                        <p>Aktueller Status und Wartungsplan des Burglifts</p>
+                        <a href="/api/lift" class="medieval-button">
+                            <i class="fas fa-cog"></i> Lift überprüfen
+                        </a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h2>Dienstplan</h2>
+                        <p>Termine und wichtige Ereignisse der Burg</p>
+                        <a href="/dienstplan" class="medieval-button">
+                            <i class="fas fa-calendar-check"></i> Zum Dienstplan
+                        </a>
+                    </div>
+                </div>
+
+                <div class="quick-stats">
+                    <div class="stat-card medieval-panel">
+                        <h3><i class="fas fa-tasks"></i> Offene Aufgaben</h3>
+                        <p class="stat-number"><%= offeneAufgaben || 4 %></p>
+                    </div>
+                    <div class="stat-card medieval-panel">
+                        <h3><i class="fas fa-dungeon"></i> Burglift</h3>
+                        <p class="stat-status <%= liftStatus === 'aktiv' ? 'status-aktiv' : 'status-inaktiv' %>">
+                            <%= liftStatus || 'Aktiv' %>
+                        </p>
+                    </div>
+                    <div class="stat-card medieval-panel">
+                        <h3><i class="fas fa-calendar-day"></i> Nächster Termin</h3>
+                        <p class="stat-date">Lift-Wartung in 3 Tagen</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Version 25.1</p>
+            <p>Programmiert von Martin Steindorfer</p>
+        </footer>
+    </div>
+
+    <style>
+        .dashboard-container {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .dashboard-card {
+            background: var(--background-color);
+            padding: 25px;
+            border: double 4px var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .dashboard-card h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .dashboard-card p {
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: var(--background-color);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .stat-status {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .status-aktiv {
+            color: #2F4F2F;
+            background: rgba(144, 238, 144, 0.3);
+            border: 1px solid #006400;
+        }
+
+        .status-inaktiv {
+            color: #8B0000;
+            background: rgba(255, 182, 193, 0.3);
+            border: 1px solid #8B0000;
+        }
+
+        .stat-date {
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

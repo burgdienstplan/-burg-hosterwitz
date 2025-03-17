@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burg Hosterwitz - Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Burg Hosterwitz</h1>
+        </header>
+
+        <main class="medieval-panel">
+            <div class="login-container">
+                <h2>Willkommen in der Burg</h2>
+                <div id="error-message" class="error-message <%= typeof error !== 'undefined' ? 'show' : '' %>">
+                    <%= typeof error !== 'undefined' ? error : '' %>
+                </div>
+                <form id="loginForm" class="medieval-form" action="/login" method="POST" onsubmit="return validateForm()">
+                    <div class="form-group">
+                        <label class="form-label" for="username">Benutzername:</label>
+                        <input type="text" id="username" name="username" class="form-input" required 
+                            placeholder="z.B. kastellan oder hausmeister">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Passwort:</label>
+                        <input type="password" id="password" name="password" class="form-input" required
+                            placeholder="Ihr Passwort">
+                        <div class="password-info">
+                            <small>Kastellan: burg123 | Hausmeister: haus123</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="medieval-button">
+                        <i class="fas fa-key"></i> Eintreten
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <style>
+            .login-container {
+                max-width: 400px;
+                margin: 0 auto;
+                padding: 30px;
+                background: var(--background-color);
+                border: double 4px var(--border-color);
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .login-container h2 {
+                text-align: center;
+                color: var(--primary-color);
+                font-family: 'Cinzel', serif;
+                margin-bottom: 30px;
+            }
+
+            .error-message {
+                display: none;
+                padding: 10px;
+                margin-bottom: 20px;
+                background-color: rgba(139, 0, 0, 0.1);
+                border: 1px solid #8B0000;
+                color: #8B0000;
+                border-radius: 4px;
+                text-align: center;
+            }
+
+            .error-message.show {
+                display: block;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                color: var(--primary-color);
+                font-weight: 600;
+            }
+
+            .form-input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                background-color: white;
+                font-family: inherit;
+            }
+
+            .form-input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 5px rgba(139, 69, 19, 0.2);
+            }
+
+            .medieval-button {
+                width: 100%;
+                padding: 12px;
+                background-color: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-family: 'Cinzel', serif;
+                font-size: 1.1em;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+
+            .medieval-button:hover {
+                background-color: #654321;
+            }
+
+            .password-info {
+                margin-top: 5px;
+                text-align: center;
+                color: var(--text-color);
+            }
+
+            @media (max-width: 480px) {
+                .login-container {
+                    padding: 20px;
+                    margin: 10px;
+                }
+            }
+        </style>
+
+        <script>
+            function validateForm() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const errorMessage = document.getElementById('error-message');
+                
+                // Validierung
+                if (!username || !password) {
+                    errorMessage.textContent = 'Bitte füllen Sie alle Felder aus';
+                    errorMessage.classList.add('show');
+                    return false;
+                }
+                
+                // Prüfen ob es ein gültiger Benutzer ist
+                const validUsers = ['kastellan', 'hausmeister'];
+                if (!validUsers.includes(username.toLowerCase())) {
+                    errorMessage.textContent = 'Ungültiger Benutzername';
+                    errorMessage.classList.add('show');
+                    return false;
+                }
+                
+                return true;
+            }
+
+            // Fehler-Message ausblenden wenn User tippt
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.addEventListener('input', () => {
+                    document.getElementById('error-message').classList.remove('show');
+                });
+            });
+        </script>
+
+        <footer class="footer">
+            <p>Version 25.1</p>
+            <p>Programmiert von Martin Steindorfer</p>
+        </footer>
+    </div>
+</body>
+</html>

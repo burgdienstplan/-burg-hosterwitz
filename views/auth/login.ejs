@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --background-color: #FFF8DC;
+            --text-color: #4A3728;
+            --border-color: #8B4513;
+            --accent-color: #DAA520;
+        }
+
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .medieval-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .medieval-panel {
+            background-color: var(--background-color);
+            border: 4px double var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .medieval-title {
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+
+        .medieval-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--background-color);
+            font-family: 'Cinzel', serif;
+            color: var(--text-color);
+        }
+
+        .medieval-button {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .medieval-button:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .error-message {
+            color: #8B0000;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="medieval-container">
+        <div class="medieval-panel">
+            <h1 class="medieval-title">Willkommen in der<br>Burg Hosterwitz</h1>
+            
+            <% if (error && error.length > 0) { %>
+                <div class="error-message"><%= error %></div>
+            <% } %>
+
+            <form action="/auth/login" method="POST">
+                <input type="text" 
+                       name="benutzername" 
+                       placeholder="Benutzername" 
+                       class="medieval-input" 
+                       required>
+                
+                <input type="password" 
+                       name="passwort" 
+                       placeholder="Passwort" 
+                       class="medieval-input" 
+                       required>
+                
+                <button type="submit" class="medieval-button">
+                    Die Burg betreten
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
