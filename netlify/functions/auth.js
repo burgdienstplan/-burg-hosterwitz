@@ -32,9 +32,25 @@ const User = mongoose.models.User || mongoose.model('User', userSchema);
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   
+  // CORS Headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
+  // Handle preflight requests
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers
+    };
+  }
+  
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers,
       body: JSON.stringify({ message: 'Methode nicht erlaubt' })
     };
   }
@@ -43,12 +59,21 @@ exports.handler = async (event, context) => {
     await connectDB();
     const { username, password } = JSON.parse(event.body);
 
+    if (!username || !password) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ message: 'Benutzername und Passwort sind erforderlich' })
+      };
+    }
+
     // Benutzer in der Datenbank suchen
     const user = await User.findOne({ username });
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return {
         statusCode: 401,
+        headers,
         body: JSON.stringify({ message: 'Ungültige Anmeldedaten' })
       };
     }
@@ -70,6 +95,7 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({ 
         token, 
         user: {
@@ -84,7 +110,8 @@ exports.handler = async (event, context) => {
     console.error('Login-Fehler:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Serverfehler bei der Anmeldung' })
+      headers,
+      body: JSON.stringify({ message: 'Serverfehler bei der Anmeldung', error: error.message })
     };
   }
 };

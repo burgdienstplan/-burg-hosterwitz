@@ -20,19 +20,16 @@
                 <div id="error-message" class="error-message <%= typeof error !== 'undefined' ? 'show' : '' %>">
                     <%= typeof error !== 'undefined' ? error : '' %>
                 </div>
-                <form id="loginForm" class="medieval-form" action="/login" method="POST" onsubmit="return validateForm()">
+                <form id="loginForm" class="medieval-form" onsubmit="return handleLogin(event)">
                     <div class="form-group">
                         <label class="form-label" for="username">Benutzername:</label>
                         <input type="text" id="username" name="username" class="form-input" required 
-                            placeholder="z.B. kastellan oder hausmeister">
+                            placeholder="z.B. burgvogt oder burgmeister">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="password">Passwort:</label>
                         <input type="password" id="password" name="password" class="form-input" required
                             placeholder="Ihr Passwort">
-                        <div class="password-info">
-                            <small>Kastellan: burg123 | Hausmeister: haus123</small>
-                        </div>
                     </div>
                     <button type="submit" class="medieval-button">
                         <i class="fas fa-key"></i> Eintreten
@@ -117,12 +114,6 @@
                 background-color: #654321;
             }
 
-            .password-info {
-                margin-top: 5px;
-                text-align: center;
-                color: var(--text-color);
-            }
-
             @media (max-width: 480px) {
                 .login-container {
                     padding: 20px;
@@ -132,7 +123,9 @@
         </style>
 
         <script>
-            function validateForm() {
+            async function handleLogin(event) {
+                event.preventDefault();
+                
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 const errorMessage = document.getElementById('error-message');
@@ -144,15 +137,32 @@
                     return false;
                 }
                 
-                // Prüfen ob es ein gültiger Benutzer ist
-                const validUsers = ['kastellan', 'hausmeister'];
-                if (!validUsers.includes(username.toLowerCase())) {
-                    errorMessage.textContent = 'Ungültiger Benutzername';
+                try {
+                    const response = await fetch('/.netlify/functions/auth', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Token im localStorage speichern
+                        localStorage.setItem('token', data.token);
+                        // Zur Hauptseite weiterleiten
+                        window.location.href = '/';
+                    } else {
+                        errorMessage.textContent = data.message || 'Anmeldung fehlgeschlagen';
+                        errorMessage.classList.add('show');
+                    }
+                } catch (error) {
+                    errorMessage.textContent = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.';
                     errorMessage.classList.add('show');
-                    return false;
                 }
                 
-                return true;
+                return false;
             }
 
             // Fehler-Message ausblenden wenn User tippt

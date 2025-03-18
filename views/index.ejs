@@ -12,20 +12,20 @@
         <header class="header">
             <h1>Burg Hosterwitz</h1>
             <% if (user) { %>
-                <p>Willkommen, <%= user.role === 'kastellan' ? 'Burgvogt' : (user.role === 'hausmeister' ? 'Burgmeister' : user.username) %></p>
+                <p>Willkommen, <%= user.role === 'burgvogt' ? 'Burgvogt' : (user.role === 'burgmeister' ? 'Burgmeister' : user.username) %></p>
             <% } %>
         </header>
 
         <nav class="nav">
             <ul class="nav-list">
                 <% if (user) { %>
-                    <% if (user.role === 'kastellan') { %>
+                    <% if (user.role === 'burgvogt') { %>
                         <li><a href="/dienstplan" class="nav-link">Dienstplan</a></li>
                         <li><a href="/mitarbeiter" class="nav-link">Mitarbeiter</a></li>
                         <li><a href="/aufgaben" class="nav-link">Aufgaben</a></li>
                         <li><a href="/aufgaben/lift" class="nav-link">Lift-Wartung</a></li>
                         <li><a href="/material" class="nav-link">Lagerverwaltung</a></li>
-                    <% } else if (user.role === 'hausmeister') { %>
+                    <% } else if (user.role === 'burgmeister') { %>
                         <li><a href="/aufgaben" class="nav-link">Meine Aufgaben</a></li>
                         <li><a href="/aufgaben/lift" class="nav-link">Lift-Wartung</a></li>
                         <li><a href="/material" class="nav-link">Lagerbestand</a></li>
@@ -46,7 +46,7 @@
                 </div>
             <% } else { %>
                 <div class="medieval-panel">
-                    <% if (user.role === 'kastellan') { %>
+                    <% if (user.role === 'burgvogt') { %>
                         <h2>Burgvogt Dashboard</h2>
                         <div class="dashboard-grid">
                             <div class="dashboard-item">
@@ -75,7 +75,7 @@
                                 <a href="/material" class="medieval-button">Zum Lager</a>
                             </div>
                         </div>
-                    <% } else if (user.role === 'hausmeister') { %>
+                    <% } else if (user.role === 'burgmeister') { %>
                         <h2>Burgmeister Dashboard</h2>
                         <div class="dashboard-grid">
                             <div class="dashboard-item">
