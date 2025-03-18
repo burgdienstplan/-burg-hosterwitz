@@ -1,6 +1,6 @@
 {
   "name": "burg-verwaltung",
-  "version": "25.1",
+  "version": "25.1.1",
   "description": "Verwaltungssystem für die Burg Hosterwitz",
   "main": "server.js",
   "scripts": {
