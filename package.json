@@ -1,12 +1,12 @@
 {
   "name": "burg-verwaltung",
-  "version": "25.1",
+  "version": "25.1.1",
   "description": "Verwaltungssystem für die Burg Hosterwitz",
   "main": "server.js",
   "scripts": {
     "dev": "netlify dev",
     "build": "npm run build:client",
-    "build:client": "mkdir -p public && cp -r views/* public/",
+    "build:client": "if not exist public mkdir public && xcopy /E /I views public",
     "start": "netlify dev"
   },
   "dependencies": {
